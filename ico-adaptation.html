@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coffee &amp; Climate 2050 — Adaptation</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #000000; --surface: #16181C; --surface-hover: #1D1F23; --border: #2F3336; --border-light: #1A1A1A;
+  --text-primary: #E7E9EA; --text-secondary: #71767B; --text-tertiary: #4C5054;
+  --accent: #1D9BF0; --accent-hover: #1A8CD8; --red: #F4212E; --orange: #FF7A00; --green: #00BA7C; --purple: #8B5CF6; --yellow: #FFD700;
+  --radius: 0px; --transition: 0.15s ease;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg); color: var(--text-primary); line-height: 1.5;
+  -webkit-font-smoothing: antialiased; font-size: 15px; letter-spacing: -0.1px;
+}
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(0,0,0,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); height: 54px; }
+.nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 100%; }
+.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); font-weight: 700; font-size: 15px; letter-spacing: -0.3px; }
+.nav-brand:hover { color: var(--accent); }
+.nav-links { display: flex; align-items: center; gap: 2px; list-style: none; }
+.nav-link { display: flex; align-items: center; gap: 5px; padding: 6px 14px; text-decoration: none; color: var(--text-secondary); font-weight: 500; font-size: 14px; transition: var(--transition); white-space: nowrap; letter-spacing: -0.1px; }
+.nav-link:hover { color: var(--text-primary); background: var(--surface-hover); }
+.nav-link.active { color: var(--accent); font-weight: 700; }
+.main-wrap { max-width: 960px; margin: 54px auto 0; padding: 0 24px; }
+.section { padding: 40px 0; border-bottom: 1px solid var(--border); }
+.section:last-child { border-bottom: none; }
+.section-header { margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border-light); }
+.section-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 8px; }
+.section-tag::before { content: ''; width: 6px; height: 6px; background: var(--accent); }
+.section h2 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); margin-bottom: 8px; line-height: 1.2; }
+.section-desc { font-size: 15px; color: var(--text-secondary); max-width: 700px; line-height: 1.6; }
+
+/* Adaptation Grid */
+.adapt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.adapt-card { background: var(--surface); border: 1px solid var(--border); padding: 24px; transition: var(--transition); position: relative; }
+.adapt-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.adapt-card:nth-child(1)::before { background: var(--accent); }
+.adapt-card:nth-child(2)::before { background: var(--orange); }
+.adapt-card:nth-child(3)::before { background: var(--green); }
+.adapt-card:nth-child(4)::before { background: var(--purple); }
+.adapt-card:hover { background: var(--surface-hover); }
+.adapt-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.2px; }
+.adapt-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+/* Dashboard */
+.dash-card { background: var(--surface); border: 1px solid var(--border); margin-bottom: 16px; }
+.dash-card-header { padding: 16px 20px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.dash-card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.2px; }
+.dash-card-subtitle { font-size: 12px; color: var(--text-secondary); font-weight: 400; margin-top: 2px; }
+.dash-card-body { padding: 16px 20px 20px; }
+.dash-card-body canvas { max-height: 320px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } .adapt-grid { grid-template-columns: 1fr; } }
+
+/* Analysis */
+.analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+.analysis-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; }
+.analysis-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
+.analysis-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+@media (max-width: 768px) { .analysis-grid { grid-template-columns: 1fr; } }
+
+/* Footer */
+.footer { border-top: 1px solid var(--border); padding: 24px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-tertiary); }
+.footer strong { color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="ico-coffee-2050.html" class="nav-brand">Coffee &amp; Climate 2050</a>
+    <ul class="nav-links">
+      <li><a class="nav-link" href="ico-overview.html">Overview</a></li>
+      <li><a class="nav-link" href="ico-regions.html">Regions</a></li>
+      <li><a class="nav-link" href="ico-supply-chain.html">Supply Chain</a></li>
+      <li><a class="nav-link active" href="ico-adaptation.html">Adaptation</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="main-wrap">
+
+  <!-- ADAPTATION PATHWAYS -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-tag">Strategy</div>
+      <h2>Adaptation Pathways</h2>
+      <p class="section-desc">The ICO report identifies four critical intervention areas to mitigate the impact and build resilience across the coffee sector. Each pathway requires coordinated investment, research, and policy support.</p>
+    </div>
+    <div class="adapt-grid">
+      <div class="adapt-card">
+        <h4>Genetic Innovation & Breeding</h4>
+        <p>Development of heat-tolerant, drought-resistant Arabica hybrids through accelerated breeding programmes. F1 hybrid varieties like Centroamericano and Starmaya show 20–40% higher resilience to temperature stress, but adoption remains below 5% globally. Scaling these programmes is the single highest-impact intervention available.</p>
+      </div>
+      <div class="adapt-card">
+        <h4>Agroforestry & Shade Systems</h4>
+        <p>Integration of shade trees reduces under-canopy temperatures by 2–4°C, buffers against extreme weather, and sequesters carbon. ICO estimates agroforestry could preserve up to 3.2 million hectares of coffee land that would otherwise become unviable — while simultaneously opening carbon credit revenue streams.</p>
+      </div>
+      <div class="adapt-card">
+        <h4>Altitude Migration & Land Use</h4>
+        <p>Strategic relocation of coffee cultivation to higher elevations where temperatures remain suitable. Requires coordinated land-use planning, infrastructure investment, and support for farmer transition — particularly critical in East Africa and the Andes where elevation gradients offer viable migration corridors.</p>
+      </div>
+      <div class="adapt-card">
+        <h4>Diversification & Economic Transition</h4>
+        <p>For regions where coffee becomes categorically non-viable, planned economic diversification into alternative crops (cocoa, spices, carbon farming) with international funding mechanisms. ICO proposes a $12B transition fund for affected communities.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH & INNOVATION -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-tag">Innovation</div>
+      <h2>Technology & Research Frontiers</h2>
+      <p class="section-desc">Emerging technologies offer hope — from controlled-environment agriculture to advanced climate modelling guiding strategic decisions at farm and policy level.</p>
+    </div>
+    <div class="two-col">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div><div class="dash-card-title">Technology Readiness & Impact Matrix</div><div class="dash-card-subtitle">Bubble size = estimated hectares preserved by 2050</div></div>
+        </div>
+        <div class="dash-card-body"><canvas id="chartTech"></canvas></div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div><div class="dash-card-title">Investment Requirements by Strategy (USD B)</div><div class="dash-card-subtitle">Cumulative investment needed 2025–2050</div></div>
+        </div>
+        <div class="dash-card-body"><canvas id="chartInvestment"></canvas></div>
+      </div>
+    </div>
+    <div class="analysis-grid">
+      <div class="analysis-card">
+        <h3>Aeroponics & Controlled Environment</h3>
+        <p>Aeroponic coffee cultivation — growing plants in mist-based, soil-free systems — is emerging as a viable alternative for high-value specialty production. While current costs limit scalability, advances in LED efficiency and automation could make CEA-grown coffee commercially viable for premium segments by 2040.</p>
+      </div>
+      <div class="analysis-card">
+        <h3>Digital Twin & Predictive Analytics</h3>
+        <p>Satellite-based crop monitoring combined with AI climate models enables real-time yield prediction and early warning systems. ICO's Coffee Observatory initiative aims to provide free, actionable intelligence to all producing countries by 2030.</p>
+      </div>
+      <div class="analysis-card">
+        <h3>Carbon Markets & Climate Finance</h3>
+        <p>Coffee agroforestry systems can sequester 5–15 tonnes of CO₂ per hectare annually. Integrating coffee farms into carbon credit markets could provide $800–$2,400 per hectare per year in additional revenue — making sustainable practices economically self-reinforcing.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div><span>Based on <strong>ICO — International Coffee Organisation</strong> research · IPCC AR6 / CMIP6 ensemble · Analysis for educational purposes</span></div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--text-secondary);">WeChat: <strong style="color:var(--text-primary);">JEBI_ONE</strong></span>
+      <span style="font-size:12px;color:var(--text-secondary);">WhatsApp: <strong style="color:var(--text-primary);">+852-93188252</strong></span>
+      <span style="font-size:12px;color:var(--text-secondary);">Email: <strong style="color:var(--accent);">erik.wong@napell.bio</strong></span>
+    </div>
+  </footer>
+</main>
+
+<script>
+const c={bg:'#000000',surface:'#16181C',border:'#2F3336',text:'#E7E9EA',text2:'#71767B',text3:'#4C5054',blue:'#1D9BF0',red:'#F4212E',orange:'#FF7A00',green:'#00BA7C',purple:'#8B5CF6',yellow:'#FFD700'};
+Chart.defaults.font.family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
+Chart.defaults.font.size=11;Chart.defaults.color=c.text2;
+Chart.defaults.plugins.tooltip.backgroundColor=c.surface;Chart.defaults.plugins.tooltip.titleColor=c.text;Chart.defaults.plugins.tooltip.bodyColor=c.text2;Chart.defaults.plugins.tooltip.cornerRadius=0;Chart.defaults.plugins.tooltip.displayColors=false;Chart.defaults.plugins.tooltip.borderColor=c.border;Chart.defaults.plugins.tooltip.borderWidth=1;
+const g={color:c.border,drawBorder:false,lineWidth:0.5};
+const xG={grid:{display:false,drawBorder:false},ticks:{color:c.text2,font:{size:10}}};
+const yG={grid:g,ticks:{color:c.text2,font:{size:10}},border:{display:false}};
+
+new Chart(document.getElementById('chartTech'),{type:'bubble',data:{datasets:[{label:'Genetic Breeding',data:[{x:7,y:8,r:22}],backgroundColor:c.blue+'65',borderColor:c.blue,borderWidth:1},{label:'Agroforestry',data:[{x:8,y:7,r:28}],backgroundColor:c.green+'65',borderColor:c.green,borderWidth:1},{label:'Irrigation Tech',data:[{x:7,y:6,r:16}],backgroundColor:c.purple+'65',borderColor:c.purple,borderWidth:1},{label:'Aeroponics / CEA',data:[{x:4,y:9,r:12}],backgroundColor:c.orange+'65',borderColor:c.orange,borderWidth:1},{label:'Digital Twin / AI',data:[{x:5,y:7,r:10}],backgroundColor:c.yellow+'65',borderColor:c.yellow,borderWidth:1},{label:'Carbon Credits',data:[{x:6,y:5,r:14}],backgroundColor:c.red+'65',borderColor:c.red,borderWidth:1}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{usePointStyle:true,pointStyleWidth:6,padding:14,font:{size:10},color:c.text2}}},scales:{x:{...yG,title:{display:true,text:'Technology Readiness (1–10)',color:c.text2,font:{size:10,weight:'600'}},min:2,max:10},y:{...yG,title:{display:true,text:'Potential Impact (1–10)',color:c.text2,font:{size:10,weight:'600'}},min:3,max:11}}}});
+
+new Chart(document.getElementById('chartInvestment'),{type:'bar',data:{labels:['Genetic R&D','Agroforestry\nTransition','Irrigation\nInfrastructure','Farmer Training\n& Extension','Carbon Market\nDevelopment','CEA / Aeroponics\nR&D'],datasets:[{data:[8,18,14,6,4,5],backgroundColor:[c.blue+'75',c.green+'75',c.purple+'75',c.orange+'75',c.yellow+'75',c.red+'75'],borderColor:[c.blue,c.green,c.purple,c.orange,c.yellow,c.red],borderWidth:0.5}]},options:{responsive:true,maintainAspectRatio:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{...yG,title:{display:true,text:'USD Billions (Cumulative 2025–2050)',color:c.text2,font:{size:10,weight:'600'}},ticks:{...yG.ticks,callback:v=>'$'+v+'B'}},y:{grid:{display:false},ticks:{color:c.text2,font:{size:10}}}}}});
+</script>
+</body>
+</html>

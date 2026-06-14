@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coffee &amp; Climate 2050 — Supply Chain</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #000000; --surface: #16181C; --surface-hover: #1D1F23; --border: #2F3336; --border-light: #1A1A1A;
+  --text-primary: #E7E9EA; --text-secondary: #71767B; --text-tertiary: #4C5054;
+  --accent: #1D9BF0; --accent-hover: #1A8CD8; --red: #F4212E; --orange: #FF7A00; --green: #00BA7C; --purple: #8B5CF6; --yellow: #FFD700;
+  --radius: 0px; --transition: 0.15s ease;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg); color: var(--text-primary); line-height: 1.5;
+  -webkit-font-smoothing: antialiased; font-size: 15px; letter-spacing: -0.1px;
+}
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(0,0,0,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); height: 54px; }
+.nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 100%; }
+.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); font-weight: 700; font-size: 15px; letter-spacing: -0.3px; }
+.nav-brand:hover { color: var(--accent); }
+.nav-links { display: flex; align-items: center; gap: 2px; list-style: none; }
+.nav-link { display: flex; align-items: center; gap: 5px; padding: 6px 14px; text-decoration: none; color: var(--text-secondary); font-weight: 500; font-size: 14px; transition: var(--transition); white-space: nowrap; letter-spacing: -0.1px; }
+.nav-link:hover { color: var(--text-primary); background: var(--surface-hover); }
+.nav-link.active { color: var(--accent); font-weight: 700; }
+.main-wrap { max-width: 960px; margin: 54px auto 0; padding: 0 24px; }
+.section { padding: 40px 0; border-bottom: 1px solid var(--border); }
+.section:last-child { border-bottom: none; }
+.section-header { margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border-light); }
+.section-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 8px; }
+.section-tag::before { content: ''; width: 6px; height: 6px; background: var(--accent); }
+.section h2 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); margin-bottom: 8px; line-height: 1.2; }
+.section-desc { font-size: 15px; color: var(--text-secondary); max-width: 700px; line-height: 1.6; }
+
+/* Supply Chain Flow */
+.chain-flow { display: flex; flex-wrap: wrap; gap: 0; align-items: stretch; margin-bottom: 24px; border: 1px solid var(--border); }
+.chain-node { flex: 1; min-width: 120px; padding: 20px 16px; text-align: center; position: relative; transition: var(--transition); border-right: 1px solid var(--border); background: var(--bg); }
+.chain-node:last-child { border-right: none; }
+.chain-node:hover { background: var(--surface); }
+.chain-node-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 18px; }
+.chain-node h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.2px; }
+.chain-node p { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+.impact-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 6px; margin-top: 6px; border: 1px solid; }
+.impact-severe { border-color: var(--red); color: var(--red); }
+.impact-high { border-color: var(--orange); color: var(--orange); }
+.impact-med { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 768px) { .chain-flow { flex-direction: column; } .chain-node { border-right: none; border-bottom: 1px solid var(--border); } }
+
+/* Dashboard */
+.dash-card { background: var(--surface); border: 1px solid var(--border); margin-bottom: 16px; }
+.dash-card-header { padding: 16px 20px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.dash-card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.2px; }
+.dash-card-subtitle { font-size: 12px; color: var(--text-secondary); font-weight: 400; margin-top: 2px; }
+.dash-card-body { padding: 16px 20px 20px; }
+.dash-card-body canvas { max-height: 320px; }
+.kpi-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.kpi-mini { flex: 1; min-width: 90px; background: var(--bg); border: 1px solid var(--border); padding: 12px 14px; }
+.kpi-mini-value { font-size: 24px; font-weight: 800; letter-spacing: -0.8px; line-height: 1; margin-bottom: 4px; }
+.kpi-mini-value.red { color: var(--red); }
+.kpi-mini-value.orange { color: var(--orange); }
+.kpi-mini-value.blue { color: var(--accent); }
+.kpi-mini-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } .kpi-row { flex-direction: column; } }
+
+/* Analysis */
+.analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+.analysis-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; }
+.analysis-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
+.analysis-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+@media (max-width: 768px) { .analysis-grid { grid-template-columns: 1fr; } }
+
+/* Footer */
+.footer { border-top: 1px solid var(--border); padding: 24px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--text-tertiary); }
+.footer strong { color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="ico-coffee-2050.html" class="nav-brand">Coffee &amp; Climate 2050</a>
+    <ul class="nav-links">
+      <li><a class="nav-link" href="ico-overview.html">Overview</a></li>
+      <li><a class="nav-link" href="ico-regions.html">Regions</a></li>
+      <li><a class="nav-link active" href="ico-supply-chain.html">Supply Chain</a></li>
+      <li><a class="nav-link" href="ico-adaptation.html">Adaptation</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="main-wrap">
+
+  <!-- SUPPLY CHAIN DISRUPTION -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-tag">Analysis · Supply Chain</div>
+      <h2>End-to-End Supply Chain Disruption</h2>
+      <p class="section-desc">A 50% reduction in arable land cascades through every link in the global coffee value chain — from the 12.5 million smallholder farms to urban cafés worldwide. Each stage faces unique and compounding pressures.</p>
+    </div>
+    <div class="chain-flow">
+      <div class="chain-node"><div class="chain-node-icon">🌱</div><h4>Farming</h4><p>Smallholder livelihoods collapse as land becomes unviable</p><span class="impact-tag impact-severe">Severe</span></div>
+      <div class="chain-node"><div class="chain-node-icon">🏭</div><h4>Processing</h4><p>Wet/dry mill capacity underutilised; assets stranded</p><span class="impact-tag impact-high">High</span></div>
+      <div class="chain-node"><div class="chain-node-icon">🚢</div><h4>Export & Logistics</h4><p>Volume collapse disrupts shipping routes and port economics</p><span class="impact-tag impact-med">Medium</span></div>
+      <div class="chain-node"><div class="chain-node-icon">🔥</div><h4>Roasting</h4><p>Green bean scarcity drives prices; blend reformulation forced</p><span class="impact-tag impact-high">High</span></div>
+      <div class="chain-node"><div class="chain-node-icon">☕</div><h4>Retail & Consumer</h4><p>Specialty coffee becomes luxury; prices surge 100–180%</p><span class="impact-tag impact-high">High</span></div>
+    </div>
+
+    <div class="two-col">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div><div class="dash-card-title">Farmgate Price Projection (USD/lb)</div><div class="dash-card-subtitle">Composite Arabica price · ICO indicator</div></div>
+        </div>
+        <div class="dash-card-body"><canvas id="chartPrice"></canvas></div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div><div class="dash-card-title">Supply-Demand Gap Forecast</div><div class="dash-card-subtitle">Million 60kg bags · Production vs. Consumption</div></div>
+        </div>
+        <div class="dash-card-body"><canvas id="chartSupplyDemand"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ECONOMIC IMPACT -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-tag">Dashboard · 04</div>
+      <h2>Economic Consequences</h2>
+      <p class="section-desc">The economic ripples of coffee land loss extend far beyond the farm gate — threatening national GDPs, rural employment, and the $200B+ global coffee market.</p>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-header">
+        <div><div class="dash-card-title">Economic Loss by Segment (2025–2050 Cumulative, USD Billions)</div><div class="dash-card-subtitle">Projected cumulative economic impact across the coffee value chain</div></div>
+      </div>
+      <div class="dash-card-body">
+        <div class="kpi-row">
+          <div class="kpi-mini"><div class="kpi-mini-value red">$84B</div><div class="kpi-mini-label">Farm-level losses</div></div>
+          <div class="kpi-mini"><div class="kpi-mini-value orange">$42B</div><div class="kpi-mini-label">Processing & Export</div></div>
+          <div class="kpi-mini"><div class="kpi-mini-value blue">$36B</div><div class="kpi-mini-label">Roasting & Retail</div></div>
+          <div class="kpi-mini"><div class="kpi-mini-value" style="color:var(--text-primary)">$162B</div><div class="kpi-mini-label">Total Cumulative</div></div>
+        </div>
+        <canvas id="chartEconomic"></canvas>
+      </div>
+    </div>
+    <div class="analysis-grid">
+      <div class="analysis-card">
+        <h3>Smallholder Vulnerability</h3>
+        <p>Of the 12.5 million coffee farming families globally, 70% operate on less than 2 hectares. These farmers lack the capital to relocate, invest in irrigation, or switch crops. ICO estimates 8–10 million smallholders face existential risk by 2050 without intervention.</p>
+      </div>
+      <div class="analysis-card">
+        <h3>National Economy Exposure</h3>
+        <p>Coffee accounts for over 30% of export earnings in Ethiopia, 25% in Honduras, and 15% in Colombia. A halving of production capacity translates to severe balance-of-payments crises in these economies, with cascading effects on currency stability and sovereign debt.</p>
+      </div>
+      <div class="analysis-card">
+        <h3>Consumer Market Transformation</h3>
+        <p>With supply contracting faster than demand, retail coffee prices could increase 100–180% in real terms by 2050. The specialty segment may shrink as quality consistency becomes harder to guarantee, while blended and alternative products gain market share.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div><span>Based on <strong>ICO — International Coffee Organisation</strong> research · IPCC AR6 / CMIP6 ensemble · Analysis for educational purposes</span></div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--text-secondary);">WeChat: <strong style="color:var(--text-primary);">JEBI_ONE</strong></span>
+      <span style="font-size:12px;color:var(--text-secondary);">WhatsApp: <strong style="color:var(--text-primary);">+852-93188252</strong></span>
+      <span style="font-size:12px;color:var(--text-secondary);">Email: <strong style="color:var(--accent);">erik.wong@napell.bio</strong></span>
+    </div>
+  </footer>
+</main>
+
+<script>
+const c={bg:'#000000',surface:'#16181C',border:'#2F3336',text:'#E7E9EA',text2:'#71767B',text3:'#4C5054',blue:'#1D9BF0',red:'#F4212E',orange:'#FF7A00',green:'#00BA7C',purple:'#8B5CF6',yellow:'#FFD700'};
+Chart.defaults.font.family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
+Chart.defaults.font.size=11;Chart.defaults.color=c.text2;
+Chart.defaults.plugins.tooltip.backgroundColor=c.surface;Chart.defaults.plugins.tooltip.titleColor=c.text;Chart.defaults.plugins.tooltip.bodyColor=c.text2;Chart.defaults.plugins.tooltip.cornerRadius=0;Chart.defaults.plugins.tooltip.displayColors=false;Chart.defaults.plugins.tooltip.borderColor=c.border;Chart.defaults.plugins.tooltip.borderWidth=1;
+const g={color:c.border,drawBorder:false,lineWidth:0.5};
+const xG={grid:{display:false,drawBorder:false},ticks:{color:c.text2,font:{size:10}}};
+const yG={grid:g,ticks:{color:c.text2,font:{size:10}},border:{display:false}};
+
+new Chart(document.getElementById('chartPrice'),{type:'line',data:{labels:['2020','2025','2030','2035','2040','2045','2050'],datasets:[{label:'Projected Arabica Price',data:[1.25,2.10,2.80,3.60,4.50,5.20,6.00],borderColor:c.yellow,borderWidth:2.5,fill:false,tension:0.4,pointRadius:4,pointBackgroundColor:c.yellow,pointBorderColor:c.bg,pointBorderWidth:2},{label:'Pre-2000 Average',data:[1.10,1.10,1.10,1.10,1.10,1.10,1.10],borderColor:c.text2,borderWidth:1,borderDash:[5,4],fill:false,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{usePointStyle:true,pointStyleWidth:6,padding:16,font:{size:10},color:c.text2}}},scales:{y:{...yG,title:{display:true,text:'USD per Pound',color:c.text2,font:{size:10,weight:'600'}},ticks:{...yG.ticks,callback:v=>'$'+v}},x:{...xG}}}});
+
+new Chart(document.getElementById('chartSupplyDemand'),{type:'bar',data:{labels:['2020','2025','2030','2035','2040','2045','2050'],datasets:[{label:'Global Production',data:[170,172,165,152,138,120,105],backgroundColor:c.text3+'40',borderColor:c.text3+'60',borderWidth:0.5},{label:'Global Consumption',data:[168,178,190,202,212,220,228],backgroundColor:c.red+'55',borderColor:c.red,borderWidth:0.5}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{usePointStyle:true,pointStyleWidth:6,padding:16,font:{size:10},color:c.text2}}},scales:{y:{...yG,title:{display:true,text:'Million 60kg Bags',color:c.text2,font:{size:10,weight:'600'}},ticks:{...yG.ticks,callback:v=>v+'M'}},x:{...xG}}}});
+
+new Chart(document.getElementById('chartEconomic'),{type:'bar',data:{labels:['2025–30','2030–35','2035–40','2040–45','2045–50'],datasets:[{label:'Farm-level',data:[8,14,20,24,18],backgroundColor:c.red+'75',borderColor:c.red,borderWidth:0.5},{label:'Processing & Export',data:[4,7,10,12,9],backgroundColor:c.orange+'70',borderColor:c.orange,borderWidth:0.5},{label:'Roasting & Retail',data:[3,6,8,10,9],backgroundColor:c.blue+'65',borderColor:c.blue,borderWidth:0.5}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{usePointStyle:true,pointStyleWidth:6,padding:16,font:{size:10},color:c.text2}}},scales:{y:{...yG,stacked:true,title:{display:true,text:'USD Billions',color:c.text2,font:{size:10,weight:'600'}},ticks:{...yG.ticks,callback:v=>'$'+v+'B'}},x:{...xG,stacked:true}}}});
+</script>
+</body>
+</html>
